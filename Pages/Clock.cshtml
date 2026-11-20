@@ -1,0 +1,20 @@
+@page
+@{
+    ViewData["Title"] = "現在時間";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/clock.css" asp-append-version="true" />
+}
+
+<section class="clock" lang="zh-Hant" aria-label="現在時間">
+    <time class="clock-date" id="clock-date" aria-label="現在日期"></time>
+    <div class="clock-center">
+        <time class="clock-time" id="clock-time" role="timer" aria-live="off" aria-label="現在時間"></time>
+    </div>
+    <noscript>請啟用 JavaScript 以顯示裝置當地日期與時間。</noscript>
+</section>
+
+@section Scripts {
+    <script src="~/js/clock.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,35 @@
+.clock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 16rem;
+  height: calc(100vh - 12rem);
+  height: calc(100dvh - 12rem);
+  color: #172b3a;
+}
+
+.clock-date {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding-block: 3rem;
+}
+
+.clock-time {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(1rem, 10vw, 8rem);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
