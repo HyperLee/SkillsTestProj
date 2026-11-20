@@ -25,6 +25,16 @@
   padding-block: 3rem;
 }
 
+.clock-timezone {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  max-width: 100%;
+  font-size: 0.95rem;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
 .clock-time {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
   font-variant-numeric: tabular-nums;

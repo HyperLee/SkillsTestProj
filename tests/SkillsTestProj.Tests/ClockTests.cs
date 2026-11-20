@@ -33,6 +33,7 @@ public sealed class ClockTests : IClassFixture<ClockApplication>, IAsyncLifetime
     {
         await page.GotoAsync(new Uri(application.BaseAddress, "/Clock").ToString());
         await Expect(page.Locator("#clock-date")).ToHaveTextAsync("2026/01/05");
+        await Expect(page.Locator("#clock-timezone")).ToHaveTextAsync("Asia/Taipei · UTC+08:00");
         Assert.Empty(errors);
     }
 
@@ -126,9 +127,11 @@ public sealed class ClockTests : IClassFixture<ClockApplication>, IAsyncLifetime
     }
 
     [Theory]
-    [InlineData("America/Los_Angeles", "2026/11/20", "08:30:00")]
-    [InlineData("Asia/Tokyo", "2026/11/21", "01:30:00")]
-    public async Task Clock_UsesEachDevicesTimezone(string timezone, string date, string time)
+    [InlineData("America/Los_Angeles", "2026/11/20", "08:30:00", "UTC-08:00")]
+    [InlineData("Asia/Tokyo", "2026/11/21", "01:30:00", "UTC+09:00")]
+    [InlineData("Asia/Colombo", "2026/11/20", "22:00:00", "UTC+05:30")]
+    [InlineData("UTC", "2026/11/20", "16:30:00", "UTC+00:00")]
+    public async Task Clock_UsesEachDevicesTimezone(string timezone, string date, string time, string offset)
     {
         await using var otherContext = await application.Browser.NewContextAsync(new() { TimezoneId = timezone });
         var otherPage = await otherContext.NewPageAsync();
@@ -136,6 +139,7 @@ public sealed class ClockTests : IClassFixture<ClockApplication>, IAsyncLifetime
         await otherPage.GotoAsync(new Uri(application.BaseAddress, "/Clock").ToString());
         await Expect(otherPage.Locator("#clock-date")).ToHaveTextAsync(date);
         await Expect(otherPage.Locator("#clock-time")).ToHaveTextAsync(time);
+        await Expect(otherPage.Locator("#clock-timezone")).ToHaveTextAsync($"{timezone} · {offset}");
     }
 
     [Theory]
@@ -152,9 +156,13 @@ public sealed class ClockTests : IClassFixture<ClockApplication>, IAsyncLifetime
                 const date = document.querySelector('#clock-date').getBoundingClientRect();
                 const time = document.querySelector('#clock-time').getBoundingClientRect();
                 const main = document.querySelector('.clock').getBoundingClientRect();
+                const timezone = document.querySelector('#clock-timezone').getBoundingClientRect();
                 return document.documentElement.scrollWidth <= innerWidth
                     && time.left >= 0 && time.right <= innerWidth
                     && date.bottom < time.top
+                    && timezone.top > time.bottom
+                    && timezone.left >= main.left && timezone.right <= main.right + 1
+                    && Math.abs(timezone.bottom - main.bottom) < 1
                     && Math.abs((time.left + time.right - main.left - main.right) / 2) < 1
                     && Math.abs((time.top + time.bottom - main.top - main.bottom) / 2) < 1;
             }
@@ -173,10 +181,12 @@ public sealed class ClockTests : IClassFixture<ClockApplication>, IAsyncLifetime
         await changingPage.GotoAsync(new Uri(application.BaseAddress, "/Clock").ToString());
         await Expect(changingPage.Locator("#clock-date")).ToHaveTextAsync("2026/11/21");
         await Expect(changingPage.Locator("#clock-time")).ToHaveTextAsync("00:30:00");
+        await Expect(changingPage.Locator("#clock-timezone")).ToHaveTextAsync("Asia/Taipei · UTC+08:00");
 
         await cdp.SendAsync("Emulation.setTimezoneOverride", new() { ["timezoneId"] = "America/Los_Angeles" });
         await changingPage.Clock.RunForAsync(500);
         await Expect(changingPage.Locator("#clock-date")).ToHaveTextAsync("2026/11/20");
         await Expect(changingPage.Locator("#clock-time")).ToHaveTextAsync("08:30:00");
+        await Expect(changingPage.Locator("#clock-timezone")).ToHaveTextAsync("America/Los_Angeles · UTC-08:00");
     }
 }
